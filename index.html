@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Timer przerw</title><style>
+body{margin:0;font-family:system-ui,sans-serif;background:#111;color:#fff;text-align:center;display:flex;flex-direction:column;min-height:100vh;justify-content:center}
+#t{font-size:28vw;font-weight:700;font-variant-numeric:tabular-nums}
+.done{background:#c0392b!important}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px}
+button{font-size:22px;padding:18px 22px;border:0;border-radius:14px;background:#2d6cdf;color:#fff;min-width:90px}
+button.s{background:#333}#c{font-size:20px;color:#aaa;margin-top:10px}
+</style></head><body>
+<div id="t">1:30</div>
+<div class="row"><button onclick="go(60)">1:00</button><button onclick="go(90)">1:30</button><button onclick="go(120)">2:00</button><button onclick="go(180)">3:00</button></div>
+<div class="row"><button class="s" onclick="add(15)">+15 s</button><button class="s" onclick="stop()">Stop</button></div>
+<div id="c">Serie: 0 <button class="s" style="font-size:16px;padding:8px 12px" onclick="n=0;upd()">zeruj</button></div>
+<script>
+let end=0,iv=null,n=0,ac,wl;const T=document.getElementById('t');
+function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function upd(){document.getElementById('c').firstChild.nodeValue='Serie: '+n+' '}
+function beep(f,d,w){ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.value=.4;o.start(ac.currentTime+w);o.stop(ac.currentTime+w+d)}
+async function go(s){ac=ac||new(window.AudioContext||window.webkitAudioContext)();try{wl=await navigator.wakeLock.request('screen')}catch(e){}
+document.body.classList.remove('done');end=Date.now()+s*1000;n++;upd();clearInterval(iv);iv=setInterval(tick,200);tick()}
+function add(s){if(iv)end+=s*1000}
+function stop(){clearInterval(iv);iv=null;T.textContent='0:00';document.body.classList.remove('done')}
+function tick(){const r=(end-Date.now())/1000;T.textContent=fmt(r);
+if(r<=0){clearInterval(iv);iv=null;document.body.classList.add('done');beep(880,.25,0);beep(880,.25,.35);beep(1320,.5,.7);if(navigator.vibrate)navigator.vibrate([400,150,400,150,700])}}
+</script></body></html>
